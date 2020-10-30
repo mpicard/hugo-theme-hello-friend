@@ -39,12 +39,26 @@
     {{ end }}
 
     {{ if .Params.Cover }}
+      {{ $src := .Resources.GetMatch .Params.Cover }}
+      {{ $tiny := $src.Resize "500x" }}
+      {{ $small := $src.Resize "800x" }}
+      {{ $medium := $src.Resize "1200x" }}
+
       <figure class="post-cover">
-        {{ if .Params.UseRelativeCover }}
-          <img src="{{ (printf "%s%s" .Permalink .Params.Cover ) }}" alt="{{ .Params.CoverAlt | plainify | default .Title }}" />
-        {{ else }}
-          <img src="{{ .Params.Cover | absURL }}" alt="{{ .Params.CoverAlt | plainify | default .Title }}" />
-        {{ end }}
+        <img
+          sizes="(min-width: 35em) 720px, 100vw"
+          srcset="{{ if ge $src.Width "500" }}
+                {{ with $tiny.RelPermalink }}{{ . }} 500w{{ end }}
+              {{ end }}
+              {{ if ge $src.Width "800" }}
+                {{ with $small.RelPermalink }}, {{ . }} 800w{{ end }}
+              {{ end }}
+              {{ if ge $src.Width "1200" }}
+                {{ with $medium.RelPermalink }}, {{ . }} 1200w{{ end }}
+              {{ end }}"
+          src="{{ $src.RelPermalink }}"
+          alt="{{ .Params.CoverAlt | plainify | default .Title }}"
+        />
 
         {{ if .Params.CoverCaption }}
           <figcaption class="center">{{ .Params.CoverCaption | markdownify }}</figcaption>
